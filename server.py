@@ -14,8 +14,6 @@ KILOBYTE = 1024
 READ_SIZE = CHUNK_SIZE * KILOBYTE # 100 KB
 
 format = '%(asctime)s, %(levelname)s, %(message)s, %(name)s'
-# logging.basicConfig(level=logging.INFO, format=format)
-# log = logging.getLogger(__name__)
 
 log_levels = {
         'critical': logging.CRITICAL,
