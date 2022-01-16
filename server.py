@@ -31,17 +31,18 @@ parser.add_argument(
         '--loglevel', default='', choices=log_levels, type=str.lower
 )
 parser.add_argument('--delay', default=1, type=int)
-parser.add_argument('--path')
+parser.add_argument('--path', default='test_photos')
 main_args = parser.parse_args()
 logging.basicConfig(level=log_levels[main_args.loglevel], format=format)
 log = logging.getLogger(__name__)
 
 
 async def archivate(request):
-    if main_args.path:
-        path = Path(main_args.path) / request.match_info['archive_hash']
-    else:
-        path = Path('test_photos') / request.match_info['archive_hash']
+    # if main_args.path:
+    #     path = Path(main_args.path) / request.match_info['archive_hash']
+    # else:
+    #     path = Path('test_photos') / request.match_info['archive_hash']
+    path = request.app.path / request.match_info['archive_hash']
     if '.' in str(path):
         raise web.HTTPNotFound(body='Using dot "." is not allowed')
     if not os.path.exists(path):
@@ -62,7 +63,7 @@ async def archivate(request):
     try:
         while not proc.stdout.at_eof():
             data = await proc.stdout.read(n=READ_SIZE)
-            await asyncio.sleep(main_args.delay)
+            await asyncio.sleep(request.app.delay)
             await response.write(data)
             log.info('Sending archive chunk ...')
     except asyncio.CancelledError:
@@ -95,6 +96,8 @@ async def handle_index_page(request):
 
 if __name__ == '__main__':
     app = web.Application()
+    app.storage = Path(main_args.path)
+    app.delay = main_args.delay
     app.add_routes([
         web.get('/', handle_index_page),
         web.get('/archive/{archive_hash}/', archivate),
