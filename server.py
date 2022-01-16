@@ -38,7 +38,8 @@ log = logging.getLogger(__name__)
 
 
 async def archivate(request):
-    path = request.app.storage / request.match_info['archive_hash']
+    archive_name = request.match_info['archive_hash']
+    path = request.app.storage / archive_name
     if '.' in str(path):
         raise web.HTTPNotFound(body='Using dot "." is not allowed')
     if not os.path.exists(path):
@@ -50,7 +51,7 @@ async def archivate(request):
     )
     response = web.StreamResponse()
     response.headers['Content-Disposition'] = (
-            f'attachment; filename="{path}.zip"'
+            f'attachment; filename="{archive_name}.zip"'
     )
     response.headers['Transfer-Encoding'] = 'deflate; chunked'
     response.headers['Connection'] = 'keep-alive'
