@@ -45,7 +45,7 @@ async def archivate(request):
     if not os.path.exists(path):
         raise web.HTTPNotFound(body='File is deleted or never existed')
     args = ['-r', '-', '.', '-i', '*']
-    proc = await asyncio.create_subprocess_exec(
+    zip_process = await asyncio.create_subprocess_exec(
             'zip', *args, cwd=path,
             stdout=asyncio.subprocess.PIPE
     )
@@ -58,8 +58,8 @@ async def archivate(request):
     await response.prepare(request)
 
     try:
-        while not proc.stdout.at_eof():
-            data = await proc.stdout.read(n=READ_SIZE)
+        while not zip_process.stdout.at_eof():
+            data = await zip_process.stdout.read(n=READ_SIZE)
             await asyncio.sleep(request.app.delay)
             await response.write(data)
             log.info('Sending archive chunk ...')
@@ -74,8 +74,8 @@ async def archivate(request):
         log.error(str(e))
     finally:
         try:
-            proc.kill()
-            outs, errs = await proc.communicate()
+            zip_process.kill()
+            outs, errs = await zip_process.communicate()
         except ProcessLookupError:
             pass
         log.info('Sending End of file')
