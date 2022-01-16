@@ -38,10 +38,6 @@ log = logging.getLogger(__name__)
 
 
 async def archivate(request):
-    # if main_args.path:
-    #     path = Path(main_args.path) / request.match_info['archive_hash']
-    # else:
-    #     path = Path('test_photos') / request.match_info['archive_hash']
     path = request.app.storage / request.match_info['archive_hash']
     if '.' in str(path):
         raise web.HTTPNotFound(body='Using dot "." is not allowed')
